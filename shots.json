@@ -1,0 +1,6 @@
+[
+  { "name": "1-pictures.jpg", "query": "?shot=play&seed=1", "note": "The cover: a scene three differences in, two still hiding." },
+  { "name": "2-hint.jpg", "query": "?shot=hunt&seed=1", "note": "A harder scene, with the hint radar sweeping over a difference." },
+  { "name": "3-zoom.jpg", "query": "?shot=zoom&seed=1", "note": "The shared zoom, looking closely at one difference in both pictures." },
+  { "name": "4-stars.jpg", "query": "?shot=result&seed=1", "note": "A scene cleared with three stars." }
+]

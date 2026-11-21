@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Almost Identical &mdash; a spot the difference game</title>
+<meta name="description" content="Almost Identical: a hand-drawn spot the difference game. Five procedural scenes, Classic, Zen and seeded Daily modes, hints, combos and stars. Plays offline from its own files.">
+<link rel="stylesheet" href="style.css">
+<!-- An inline icon, so the game still asks the browser for nothing at all. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2312162a'/%3E%3Crect x='5' y='7' width='10' height='12' rx='2' fill='%23ffcb47'/%3E%3Crect x='17' y='13' width='10' height='12' rx='2' fill='%238a7bff'/%3E%3C/svg%3E">
+</head>
+<body data-screen="menu">
+
+<div id="app">
+
+  <!-- ---------------------------------------------------------------- header -->
+  <header id="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-name">Almost&nbsp;Identical</span>
+    </div>
+    <div id="scene-name" class="scene-name">Cozy Cyberpunk Ramen Shop</div>
+    <div class="topbar-right">
+      <div id="mode-chip" class="chip">Classic</div>
+      <button id="btn-menu" class="btn btn-ghost" type="button">Menu</button>
+      <button id="btn-sound" class="btn btn-ghost" type="button" aria-pressed="true">Sound&nbsp;on</button>
+    </div>
+  </header>
+
+  <!-- ---------------------------------------------------------------- hud -->
+  <section id="hud" aria-label="Game status">
+    <div class="stat stat-timer">
+      <span class="stat-label">Time</span>
+      <span id="stat-time" class="stat-value">2:00</span>
+    </div>
+    <div class="stat stat-found">
+      <span class="stat-label">Found</span>
+      <span id="stat-found" class="stat-value"><b>0</b><i>/</i><em>5</em></span>
+    </div>
+    <div class="stat stat-left">
+      <span class="stat-label">Remaining</span>
+      <span id="stat-left" class="stat-value">5</span>
+    </div>
+    <div class="stat stat-score">
+      <span class="stat-label">Score</span>
+      <span id="stat-score" class="stat-value">0</span>
+    </div>
+    <div class="stat stat-combo" id="stat-combo-wrap">
+      <span class="stat-label">Combo</span>
+      <span id="stat-combo" class="stat-value">&times;1</span>
+    </div>
+    <div class="stat stat-stars">
+      <span class="stat-label">Best</span>
+      <span id="stat-stars" class="stat-value">&mdash;</span>
+    </div>
+  </section>
+
+  <!-- ---------------------------------------------------------------- board -->
+  <section id="board" aria-label="The two pictures">
+    <div class="panel" id="panel-a">
+      <canvas id="canvas-a" width="1000" height="640" aria-label="The first picture"></canvas>
+      <div class="panel-tag">A</div>
+    </div>
+    <div class="panel" id="panel-b">
+      <canvas id="canvas-b" width="1000" height="640" aria-label="The second picture"></canvas>
+      <div class="panel-tag">B</div>
+    </div>
+    <div id="float-layer" aria-hidden="true"></div>
+  </section>
+
+  <!-- ---------------------------------------------------------------- toolbar -->
+  <section id="toolbar" aria-label="Controls">
+    <button id="btn-hint" class="btn btn-hint" type="button">
+      <span class="key">H</span> Hint <span id="hint-count" class="pill">3</span>
+    </button>
+    <button id="btn-zoom-out" class="btn" type="button" title="Zoom out (-)">&minus;</button>
+    <button id="btn-zoom" class="btn" type="button"><span class="key">Z</span> Zoom <span id="zoom-level" class="pill">1.0&times;</span></button>
+    <button id="btn-zoom-in" class="btn" type="button" title="Zoom in (+)">+</button>
+    <button id="btn-restart" class="btn" type="button"><span class="key">R</span> Restart</button>
+    <span class="toolbar-hint">Click a difference in either picture &middot; arrows pan &middot; space marks</span>
+  </section>
+
+  <!-- ---------------------------------------------------------------- toast -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- ---------------------------------------------------------------- menu overlay -->
+  <div id="overlay-menu" class="overlay" data-open="true">
+    <div class="sheet">
+      <h1 class="sheet-title">Almost Identical</h1>
+      <p class="sheet-sub">Two pictures, drawn by the same code. One of them has been nudged.
+        Find every change before the clock runs out.</p>
+
+      <div class="modes" role="radiogroup" aria-label="Mode">
+        <button class="mode-card is-on" data-mode="classic" type="button" role="radio" aria-checked="true">
+          <b>Classic</b><span>A countdown, combos and a star rating.</span>
+        </button>
+        <button class="mode-card" data-mode="zen" type="button" role="radio" aria-checked="false">
+          <b>Zen</b><span>No clock, no penalty. Just look.</span>
+        </button>
+        <button class="mode-card" data-mode="daily" type="button" role="radio" aria-checked="false">
+          <b>Daily</b><span>One seeded puzzle a day, the same for everyone.</span>
+        </button>
+      </div>
+
+      <div class="sheet-grid-head">
+        <h2>Scenes</h2>
+        <div class="sheet-progress" id="progress-line">0 of 7 scenes cleared</div>
+      </div>
+      <div id="level-grid" class="level-grid"></div>
+
+      <div class="sheet-foot">
+        <span id="menu-daily" class="menu-daily"></span>
+        <button id="btn-reset" class="btn btn-ghost btn-small" type="button">Erase saved progress</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------------------------------------------------------------- result overlay -->
+  <div id="overlay-result" class="overlay" data-open="false">
+    <div class="sheet sheet-narrow">
+      <div id="result-stars" class="result-stars"></div>
+      <h2 id="result-title" class="sheet-title">Scene cleared</h2>
+      <p id="result-sub" class="sheet-sub"></p>
+      <dl class="result-table">
+        <div><dt>Time left</dt><dd id="result-time">&mdash;</dd></div>
+        <div><dt>Misses</dt><dd id="result-miss">&mdash;</dd></div>
+        <div><dt>Longest combo</dt><dd id="result-combo">&mdash;</dd></div>
+        <div><dt>Score</dt><dd id="result-score">&mdash;</dd></div>
+        <div><dt>Best</dt><dd id="result-best">&mdash;</dd></div>
+      </dl>
+      <div class="row-btns">
+        <button id="btn-again" class="btn" type="button">Play again</button>
+        <button id="btn-next" class="btn btn-primary" type="button">Next scene</button>
+        <button id="btn-result-menu" class="btn btn-ghost" type="button">Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------------------------------------------------------------- pause overlay -->
+  <div id="overlay-pause" class="overlay" data-open="false">
+    <div class="sheet sheet-narrow">
+      <h2 class="sheet-title">Paused</h2>
+      <p class="sheet-sub">The clock is stopped.</p>
+      <div class="row-btns">
+        <button id="btn-resume" class="btn btn-primary" type="button">Resume</button>
+        <button id="btn-pause-restart" class="btn" type="button">Restart</button>
+        <button id="btn-pause-menu" class="btn btn-ghost" type="button">Menu</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="src/namespace.js"></script>
+<script src="src/rng.js"></script>
+<script src="src/art.js"></script>
+<script src="src/palettes.js"></script>
+<script src="src/scenes.js"></script>
+<script src="src/diffs.js"></script>
+<script src="src/levels.js"></script>
+<script src="src/audio.js"></script>
+<script src="src/paint.js"></script>
+<script src="src/board.js"></script>
+<script src="src/game.js"></script>
+<script src="src/shots.js"></script>
+<script src="src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+# The output directory main.ts writes is a build artifact, never part of the entry.
+out/
+out2/
+
+# Editor and OS droppings.
+.DS_Store
+Thumbs.db
+node_modules/
